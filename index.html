@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>12 Pubs of Carnage Christmas</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        christmasred: '#991b1b',
+                        christmasgreen: '#065f46',
+                        darkbg: '#090d16',
+                        cardbg: '#111827',
+                        accentgold: '#fbbf24',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter & Pacifico for Word Art -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400,600,700;900&family=Mountains+of+Christmas:wght@700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #090d16;
+            color: #f3f4f6;
+            overflow-x: hidden;
+        }
+        /* Falling snow and festive emoji animation */
+        .snowflake, .festive-float {
+            position: fixed;
+            top: -20px;
+            pointer-events: none;
+            animation: fall linear infinite;
+        }
+        .snowflake {
+            background: #ffffff;
+            border-radius: 50%;
+            opacity: 0.8;
+        }
+        .festive-float {
+            font-size: 1.25rem;
+            z-index: 45;
+            opacity: 0.85;
+        }
+        @keyframes fall {
+            0% { transform: translateY(-20px) translateX(0) rotate(0deg); }
+            100% { transform: translateY(105vh) translateX(30px) rotate(360deg); }
+        }
+        /* Candy Cane Striped Word Art Styling */
+        .candy-title {
+            font-family: 'Mountains of Christmas', cursive;
+            background: linear-gradient(135deg, #ef4444 0%, #ffffff 50%, #22c55e 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #111827;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #374151;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-20 relative">
+
+    <!-- Falling Snow & Festive Emoji Container -->
+    <div id="snow-container" class="absolute inset-0 pointer-events-none z-40 overflow-hidden"></div>
+
+    <!-- Header Banner -->
+    <header class="sticky top-0 z-30 bg-slate-900/95 backdrop-blur border-b border-red-900/40 px-4 py-3 shadow-xl">
+        <div class="max-w-md mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-2.5">
+                <div class="bg-red-700 text-amber-300 font-black p-2.5 rounded-2xl text-lg shadow-lg border border-red-500/30">
+                    <span class="text-xl">🍺</span>
+                </div>
+                <div>
+                    <!-- Word Art Candy Cane Title -->
+                    <h1 class="candy-title text-2xl tracking-wide uppercase leading-none drop-shadow-md">
+                        12 Pubs of Carnage
+                    </h1>
+                    <p class="text-[10px] text-amber-400 font-bold uppercase tracking-widest flex items-center space-x-1 mt-0.5">
+                        <span>🎄 Christmas Edition</span>
+                    </p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2">
+                <div id="connection-status" class="flex items-center space-x-1 bg-slate-800 px-2.5 py-1 rounded-full border border-slate-700 text-[10px] text-slate-300">
+                    <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse" id="status-dot"></span>
+                    <span id="status-text">Live Sync</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-md mx-auto px-4 pt-4 space-y-5 relative z-10">
+
+        <!-- Custom Notification Modal -->
+        <div id="custom-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+            <div class="bg-slate-900 border border-red-900/50 rounded-2xl p-6 max-w-sm w-full shadow-2xl text-center space-y-4">
+                <div id="modal-icon" class="text-4xl text-amber-400">
+                    <i class="fa-solid fa-gift"></i>
+                </div>
+                <h3 id="modal-title" class="text-lg font-bold text-white">Notice</h3>
+                <p id="modal-message" class="text-sm text-slate-300">Message goes here...</p>
+                <button onclick="closeModal()" class="w-full bg-red-700 hover:bg-red-800 text-white font-bold py-3 px-4 rounded-xl transition shadow-lg border border-red-500/30">
+                    Got It, Cheers! 🍻
+                </button>
+            </div>
+        </div>
+
+        <!-- Admin Passcode Modal -->
+        <div id="admin-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+            <div class="bg-slate-900 border border-emerald-900/50 rounded-2xl p-6 max-w-sm w-full shadow-2xl space-y-4">
+                <div class="text-center">
+                    <div class="text-3xl text-emerald-400 mb-2">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-white">Organizer Admin Mode</h3>
+                    <p class="text-xs text-slate-400 mt-1">Enter passcode to unlock publishing ticks for the group.</p>
+                </div>
+                <input type="password" id="admin-pass-input" placeholder="Enter passcode (default: carnie12)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm text-center focus:outline-none focus:border-emerald-500">
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="closeAdminModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-2.5 rounded-xl text-sm transition">Cancel</button>
+                    <button onclick="verifyAdminPass()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-sm transition shadow">Unlock</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Control Banner (Conditional) -->
+        <section id="admin-banner" class="hidden bg-emerald-950/40 border border-emerald-500/40 rounded-xl p-3 flex items-center justify-between shadow-lg">
+            <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-lock-open text-emerald-400"></i>
+                <span class="text-xs font-bold text-emerald-200">Admin Mode Active (You control ticks)</span>
+            </div>
+            <button onclick="disableAdminMode()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-lg border border-slate-700">Lock</button>
+        </section>
+
+        <!-- Live Status Card (Current/Next Stop) -->
+        <section class="bg-gradient-to-br from-slate-900 via-slate-900 to-red-950/40 border-2 border-red-800/60 rounded-2xl p-5 shadow-2xl relative overflow-hidden">
+            <div class="absolute -right-6 -bottom-6 text-red-900/20 text-9xl pointer-events-none font-black">
+                <i class="fa-solid fa-sleigh"></i>
+            </div>
+            
+            <div class="flex justify-between items-start mb-3">
+                <span class="bg-red-950 text-red-300 border border-red-700/50 text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider flex items-center space-x-1.5 shadow">
+                    <i class="fa-solid fa-satellite-dish animate-pulse text-amber-400"></i>
+                    <span>Live Active Stop</span>
+                </span>
+                <span id="active-stop-number" class="text-xs font-mono text-amber-400 bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800 font-bold">Stop 1 of 12</span>
+            </div>
+
+            <div class="space-y-1.5 mb-4">
+                <h2 id="current-pub-name" class="text-2xl font-black text-white leading-tight">Loading active pub...</h2>
+                <p id="current-pub-address" class="text-xs text-slate-300 flex items-center space-x-1.5">
+                    <i class="fa-solid fa-location-dot text-red-500 shrink-0"></i>
+                    <span class="truncate">Loading address...</span>
+                </p>
+                <p id="current-pub-note" class="text-xs text-amber-300/90 italic pt-1">Note: Loading...</p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+                <a id="directions-btn" href="#" target="_blank" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-3 rounded-xl text-center text-xs transition shadow-md flex items-center justify-center space-x-1.5 border border-blue-400/30">
+                    <i class="fa-solid fa-diamond-turn-right"></i>
+                    <span>Maps Directions</span>
+                </a>
+                <button id="conquer-btn" onclick="markCurrentCompleted()" class="bg-red-700 hover:bg-red-600 text-white font-bold py-3 px-3 rounded-xl text-xs transition shadow-md flex items-center justify-center space-x-1.5 border border-red-500/40">
+                    <i class="fa-solid fa-check-double text-amber-300"></i>
+                    <span>Conquer Stop</span>
+                </button>
+            </div>
+            
+            <div id="non-admin-warning" class="text-center mt-2 hidden">
+                <span class="text-[10px] text-slate-400 italic">🔒 Only the organizer can tick off pubs. <button onclick="openAdminModal()" class="text-amber-400 underline hover:text-amber-300">Organizer Login</button></span>
+            </div>
+        </section>
+
+        <!-- Virtual Schematic Map Route Visualizer -->
+        <section class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center space-x-1.5">
+                    <i class="fa-solid fa-route text-red-500"></i>
+                    <span>Route Schematic Map (Chatham &rarr; Rochester)</span>
+                </h3>
+                <span class="text-xs text-amber-400 font-mono font-bold" id="progress-counter">0 / 12 Conquered</span>
+            </div>
+            
+            <!-- Horizontal Schematic Route View -->
+            <div class="overflow-x-auto py-2 no-scrollbar">
+                <div id="route-map-nodes" class="flex items-center space-x-2.5 min-w-max px-1">
+                    <!-- Nodes injected dynamically -->
+                </div>
+            </div>
+            <p class="text-[10px] text-slate-400 mt-1.5 text-center">Tap any node to jump or inspect stop details.</p>
+        </section>
+
+        <!-- Christmas Penalty / Challenge Generator Drawer -->
+        <section class="bg-gradient-to-r from-emerald-950/60 to-slate-900 border border-emerald-900/50 rounded-2xl p-4 shadow-xl space-y-2">
+            <div class="flex items-center justify-between">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-emerald-300 flex items-center space-x-1.5">
+                    <i class="fa-solid fa-dice text-amber-400"></i>
+                    <span>Christmas Penalty Wheel</span>
+                </h3>
+                <button onclick="getRandomPenalty()" class="bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold px-3 py-1.5 rounded-xl transition shadow flex items-center space-x-1">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <span>Roll Penalty</span>
+                </button>
+            </div>
+            <div id="penalty-display" class="bg-slate-950/70 border border-emerald-900/30 rounded-xl p-3 text-xs text-slate-200 italic text-center">
+                Tap 'Roll Penalty' for a festive pub challenge or forfeit! 🎅
+            </div>
+        </section>
+
+        <!-- Full Pub Crawl Itinerary Checklist -->
+        <section class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl space-y-3">
+            <div class="flex items-center justify-between">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center space-x-1.5">
+                    <i class="fa-solid fa-list-check text-red-500"></i>
+                    <span>Itinerary (12 Stops)</span>
+                </h3>
+                <div class="flex items-center space-x-2">
+                    <button onclick="openAdminModal()" class="text-[11px] text-emerald-400 hover:text-emerald-300 font-bold transition">
+                        Admin Login
+                    </button>
+                    <span class="text-slate-700">|</span>
+                    <button onclick="resetCrawlData()" class="text-[11px] text-slate-400 hover:text-red-400 transition">
+                        Reset
+                    </button>
+                </div>
+            </div>
+
+            <!-- Pub List Container -->
+            <div id="pub-list-container" class="space-y-2.5">
+                <!-- Injected via JavaScript -->
+            </div>
+        </section>
+
+        <!-- Footer Branding & Share Link -->
+        <footer class="text-center pt-2 pb-8 space-y-3">
+            <button onclick="shareCrawlLink()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold py-3 px-4 rounded-xl text-xs transition shadow flex items-center justify-center space-x-2">
+                <i class="fa-solid fa-share-nodes text-amber-400"></i>
+                <span>Share Live Crawl Link</span>
+            </button>
+            <p class="text-[11px] text-slate-400">12 Pubs of Carnage Christmas &bull; Built with D.R.A.F.T.</p>
+        </footer>
+
+    </main>
+
+    <!-- Firebase SDK Imports & App Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global Firebase configuration variables provided by environment
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'twelve-pubs-carnage-default';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+            apiKey: "AIzaSyDummyKeyForLocalTestingOnly12345",
+            authDomain: "draft-app.firebaseapp.com",
+            projectId: "draft-app",
+            storageBucket: "draft-app.appspot.com",
+            messagingSenderId: "1234567890",
+            appId: "1:1234567890:web:abcdef"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Precise route pub list starting Chatham through Rochester
+        const pubsData = [
+            { id: 1, name: "Thomas Waghorn", address: "14 Railway St, Chatham ME4 4JL", note: "Starting point near Chatham station." },
+            { id: 2, name: "Prince of Wales", address: "1 - 3 Railway St, Chatham ME4 4JW", note: "Quick second stop before heading up." },
+            { id: 3, name: "Dead Pigeon", address: "378 High St, Rochester ME1 1DJ", note: "🍔 LUNCH PIT STOP! Food & pints." },
+            { id: 4, name: "12 Degrees Micropub", address: "352 High St, Rochester ME1 1DJ", note: "Craft ales & cozy seating." },
+            { id: 5, name: "The Nags Head", address: "High St, Rochester ME1 1HS", note: "Traditional High Street local." },
+            { id: 6, name: "Olivers", address: "186 High St, Rochester ME1 1EY", note: "Mid-crawl atmosphere boost." },
+            { id: 7, name: "The Queen Charlotte", address: "159 High St, Rochester ME1 1EH", note: "Historic Rochester tavern." },
+            { id: 8, name: "Golden Lion", address: "147-149 High St, Rochester ME1 1EL", note: "Festive cheer & good vibes." },
+            { id: 9, name: "The Eagle Tavern", address: "124 High St, Rochester ME1 1JT", note: "Approaching the lower high street." },
+            { id: 10, name: "City Wall", address: "Flat 2, 120 High St, Rochester ME1 1JT", note: "Historic wall views." },
+            { id: 11, name: "Jolly Knight", address: "56 High St, The Precinct, Rochester ME1 1LD", note: "Penultimate push!" },
+            { id: 12, name: "George Vaults", address: "35 High St, Rochester ME1 1LN", note: "🏆 Grand Finale finish line!" }
+        ];
+
+        const penalties = [
+            "Down your drink: You have 30 seconds to finish your current glass!",
+            "10 press-ups on the sticky pub floor right now.",
+            "Take a selfie with a complete stranger and show the group.",
+            "You must speak in a royal British accent until the next pub stop.",
+            "No one is allowed to use the word 'pint' or 'beer' for the next 20 minutes.",
+            "Swap hats or glasses with the person to your right for the duration of this pub.",
+            "Do your best Santa 'Ho Ho Ho' impression at the bar before ordering.",
+            "You must hold your drink with your non-dominant hand for this entire stop.",
+            "Give a passionate 30-second toast to someone in the group.",
+            "Do a shot or a forfeit drink chosen by the group leader.",
+            "You cannot check your phone until you walk through the doors of the next pub.",
+            "Sing the chorus of Jingle Bells out loud right where you stand.",
+            "Do 10 high knees or star jumps in the middle of the pub.",
+            "Walk backwards from the bar back to your table without tripping.",
+            "Propose a toast to the bar staff for their hard work tonight.",
+            "Whisper everything you say until the next pub stop.",
+            "Pose like a Christmas tree statue for 15 seconds while everyone laughs.",
+            "Compliment a random person in the pub on their outfit.",
+            "Take a photo pretending to propose to your nearest mate.",
+            "Act like a penguin every time you take a step inside this venue.",
+            "You must refer to everyone in the group as 'Elf' for the next pub.",
+            "Balance a beer mat on your head for the first 5 minutes here.",
+            "Invent a handshake with the person next to you and use it immediately.",
+            "Do a dramatic reading of the nearest pub snack menu.",
+            "Pay for the next round of tap water for everyone to stay hydrated."
+        ];
+
+        let state = {
+            completed: Array(12).fill(false),
+            isAdmin: false
+        };
+
+        const docRefId = 'crawl_state_v1';
+        let isSyncing = false;
+
+        // UI update functions
+        window.closeModal = function() {
+            document.getElementById('custom-modal').classList.add('hidden');
+        };
+
+        window.openModal = function(title, message, iconClass = 'fa-solid fa-gift') {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-message').innerText = message;
+            document.getElementById('modal-icon').innerHTML = `<i class="${iconClass}"></i>`;
+            document.getElementById('custom-modal').classList.remove('hidden');
+        };
+
+        window.openAdminModal = function() {
+            document.getElementById('admin-modal').classList.remove('hidden');
+            document.getElementById('admin-pass-input').value = '';
+        };
+
+        window.closeAdminModal = function() {
+            document.getElementById('admin-modal').classList.add('hidden');
+        };
+
+        window.verifyAdminPass = function() {
+            const val = document.getElementById('admin-pass-input').value;
+            if (val === 'carnie12' || val === 'admin') {
+                state.isAdmin = true;
+                closeAdminModal();
+                updateUI();
+                openModal('Admin Unlocked', 'You now have full control to tick off pubs for the group!', 'fa-solid fa-shield-halved text-emerald-400');
+            } else {
+                openModal('Access Denied', 'Incorrect passcode. Try again.', 'fa-solid fa-triangle-exclamation text-red-500');
+            }
+        };
+
+        window.disableAdminMode = function() {
+            state.isAdmin = false;
+            updateUI();
+        };
+
+        window.getRandomPenalty = function() {
+            const rand = penalties[Math.floor(Math.random() * penalties.length)];
+            const display = document.getElementById('penalty-display');
+            display.innerText = `🎄 "${rand}"`;
+            display.classList.add('bg-emerald-900/30', 'border-emerald-500');
+            setTimeout(() => {
+                display.classList.remove('bg-emerald-900/30', 'border-emerald-500');
+            }, 600);
+        };
+
+        window.shareCrawlLink = function() {
+            const url = window.location.href;
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(url).then(() => {
+                    openModal('Link Copied!', 'Share this URL with your mates so they can follow the live crawl in real-time!', 'fa-solid fa-share-nodes text-amber-400');
+                }).catch(() => {
+                    prompt("Copy your live crawl link:", url);
+                });
+            } else {
+                prompt("Copy your live crawl link:", url);
+            }
+        };
+
+        // Render functions
+        function updateUI() {
+            // Find first uncompleted pub
+            let activeIdx = state.completed.findIndex(c => !c);
+            if (activeIdx === -1) activeIdx = pubsData.length - 1; // All completed
+
+            const activePub = pubsData[activeIdx];
+            const completedCount = state.completed.filter(Boolean).length;
+
+            // Update Header & Active Stop card
+            document.getElementById('active-stop-number').innerText = completedCount === 12 ? '🏁 Crawl Finished!' : `Stop ${activeIdx + 1} of 12`;
+            document.getElementById('current-pub-name').innerText = activePub.name;
+            document.getElementById('current-pub-address').innerText = activePub.address;
+            document.getElementById('current-pub-note').innerText = activePub.note;
+            document.getElementById('directions-btn').href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(activePub.name + ' ' + activePub.address)}`;
+
+            // Admin Banner & Warnings
+            const adminBanner = document.getElementById('admin-banner');
+            const nonAdminWarning = document.getElementById('non-admin-warning');
+            const conquerBtn = document.getElementById('conquer-btn');
+
+            if (state.isAdmin) {
+                adminBanner.classList.remove('hidden');
+                nonAdminWarning.classList.add('hidden');
+                conquerBtn.disabled = false;
+                conquerBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            } else {
+                adminBanner.classList.add('hidden');
+                nonAdminWarning.classList.remove('hidden');
+                conquerBtn.disabled = false; // Allow click to prompt admin login if needed
+            }
+
+            // Progress Counter
+            document.getElementById('progress-counter').innerText = `${completedCount} / 12 Conquered`;
+
+            // Render Route Nodes
+            const nodesContainer = document.getElementById('route-map-nodes');
+            nodesContainer.innerHTML = '';
+            pubsData.forEach((pub, idx) => {
+                const isCompleted = state.completed[idx];
+                const isActive = idx === activeIdx && completedCount < 12;
+
+                let nodeBg = 'bg-slate-800 border-slate-700 text-slate-400';
+                let icon = `<span class="font-bold">${idx + 1}</span>`;
+
+                if (isCompleted) {
+                    nodeBg = 'bg-emerald-950 border-emerald-600 text-emerald-400';
+                    icon = `<i class="fa-solid fa-check text-xs"></i>`;
+                } else if (isActive) {
+                    nodeBg = 'bg-red-950 border-red-500 text-amber-300 animate-pulse shadow-lg shadow-red-900/50';
+                    icon = `<i class="fa-solid fa-beer-mug-empty text-xs"></i>`;
+                }
+
+                const nodeEl = document.createElement('div');
+                nodeEl.className = `flex flex-col items-center cursor-pointer p-2 rounded-xl border transition min-w-[65px] ${nodeBg}`;
+                nodeEl.onclick = () => {
+                    openModal(`Stop #${pub.id}: ${pub.name}`, `${pub.address}\n\nNote: ${pub.note}`, isCompleted ? 'fa-solid fa-circle-check text-emerald-400' : 'fa-solid fa-location-dot text-red-500');
+                };
+                nodeEl.innerHTML = `
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center mb-1 bg-slate-900 border border-slate-700">
+                        ${icon}
+                    </div>
+                    <span class="text-[10px] font-bold truncate w-14 text-center">${pub.name}</span>
+                `;
+                nodesContainer.appendChild(nodeEl);
+            });
+
+            // Render Full List Checklist
+            const listContainer = document.getElementById('pub-list-container');
+            listContainer.innerHTML = '';
+            pubsData.forEach((pub, idx) => {
+                const isCompleted = state.completed[idx];
+                const isActive = idx === activeIdx && completedCount < 12;
+
+                let cardBorder = 'border-slate-800 bg-slate-900/80';
+                if (isActive) cardBorder = 'border-red-600/80 bg-slate-900 shadow-md shadow-red-950/30';
+                if (isCompleted) cardBorder = 'border-emerald-900/40 bg-emerald-950/10 opacity-75';
+
+                const itemEl = document.createElement('div');
+                itemEl.className = `border rounded-xl p-3 flex items-center justify-between transition ${cardBorder}`;
+                itemEl.innerHTML = `
+                    <div class="flex items-center space-x-3 overflow-hidden pr-2">
+                        <div class="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 ${isCompleted ? 'bg-emerald-900 text-emerald-200' : isActive ? 'bg-red-700 text-amber-300' : 'bg-slate-800 text-slate-400'}">
+                            ${isCompleted ? '✓' : pub.id}
+                        </div>
+                        <div class="truncate">
+                            <h4 class="text-xs font-bold text-white truncate flex items-center space-x-1.5">
+                                <span>${pub.name}</span>
+                                ${isActive ? '<span class="bg-red-900 text-red-200 text-[9px] px-1.5 py-0.5 rounded uppercase">Current</span>' : ''}
+                            </h4>
+                            <p class="text-[10px] text-slate-400 truncate">${pub.address}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2 shrink-0">
+                        <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(pub.name + ' ' + pub.address)}" target="_blank" class="p-2 bg-slate-800 hover:bg-slate-700 text-blue-400 rounded-lg text-xs" title="Directions">
+                            <i class="fa-solid fa-diamond-turn-right"></i>
+                        </a>
+                        <button onclick="togglePub(${idx})" class="w-8 h-8 rounded-lg flex items-center justify-center border transition ${isCompleted ? 'bg-emerald-600 border-emerald-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-500 hover:text-white'}">
+                            <i class="fa-solid fa-check text-xs"></i>
+                        </button>
+                    </div>
+                `;
+                listContainer.appendChild(itemEl);
+            });
+        }
+
+        window.togglePub = async function(idx) {
+            if (!state.isAdmin) {
+                openAdminModal();
+                return;
+            }
+            state.completed[idx] = !state.completed[idx];
+            await saveStateToFirestore();
+            updateUI();
+        };
+
+        window.markCurrentCompleted = async function() {
+            if (!state.isAdmin) {
+                openAdminModal();
+                return;
+            }
+            const activeIdx = state.completed.findIndex(c => !c);
+            if (activeIdx !== -1) {
+                state.completed[activeIdx] = true;
+                await saveStateToFirestore();
+                updateUI();
+                openModal('Stop Conquered! 🍻', `Successfully checked off ${pubsData[activeIdx].name}. Onward to the next stop!`, 'fa-solid fa-champagne-glasses text-amber-400');
+            } else {
+                openModal('All Done!', 'All 12 pubs have been conquered! Legend status achieved.', 'fa-solid fa-trophy text-amber-400');
+            }
+        };
+
+        window.resetCrawlData = async function() {
+            if (!state.isAdmin) {
+                openAdminModal();
+                return;
+            }
+            if (confirm("Are you sure you want to reset all ticked pubs?")) {
+                state.completed = Array(12).fill(false);
+                await saveStateToFirestore();
+                updateUI();
+            }
+        };
+
+        // Firebase Sync
+        async function saveStateToFirestore() {
+            try {
+                isSyncing = true;
+                const docRef = doc(db, 'artifacts', appId, 'public', docRefId);
+                await setDoc(docRef, { completed: state.completed, updatedAt: new Date().toISOString() }, { merge: true });
+            } catch (err) {
+                console.warn("Firestore write skipped/failed:", err);
+            } finally {
+                setTimeout(() => { isSyncing = false; }, 500);
+            }
+        }
+
+        async function initFirebaseAndSync() {
+            try {
+                // Anonymous auth fallback
+                if (typeof __auth_token !== 'undefined' && __auth_token) {
+                    await signInWithCustomToken(auth, __auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                const docRef = doc(db, 'artifacts', appId, 'public', docRefId);
+                
+                // Realtime listener
+                onSnapshot(docRef, (docSnap) => {
+                    if (docSnap.exists() && !isSyncing) {
+                        const data = docSnap.data();
+                        if (data && Array.isArray(data.completed)) {
+                            state.completed = data.completed;
+                            updateUI();
+                            document.getElementById('status-dot').className = 'w-2 h-2 rounded-full bg-emerald-500';
+                            document.getElementById('status-text').innerText = 'Synced Live';
+                        }
+                    }
+                }, (error) => {
+                    console.warn("Firestore snapshot listener notice:", error);
+                });
+
+            } catch (e) {
+                console.warn("Firebase initialization notice:", e);
+                document.getElementById('status-dot').className = 'w-2 h-2 rounded-full bg-amber-400';
+                document.getElementById('status-text').innerText = 'Local Mode';
+            }
+        }
+
+        // Snow and festive emoji generator
+        function createFestiveDecor() {
+            const snowContainer = document.getElementById('snow-container');
+            const emojis = ['❄️', '🍻', '🎄', '🦌', '🍺', '🎅'];
+            
+            // Generate snowflakes
+            for (let i = 0; i < 25; i++) {
+                const flake = document.createElement('div');
+                flake.className = 'snowflake';
+                const size = Math.random() * 6 + 3 + 'px';
+                flake.style.width = size;
+                flake.style.height = size;
+                flake.style.left = Math.random() * 100 + 'vw';
+                flake.style.animationDuration = Math.random() * 5 + 5 + 's';
+                flake.style.animationDelay = Math.random() * 5 + 's';
+                snowContainer.appendChild(flake);
+            }
+
+            // Generate floating festive emojis
+            for (let i = 0; i < 12; i++) {
+                const floatEl = document.createElement('div');
+                floatEl.className = 'festive-float';
+                floatEl.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+                floatEl.style.left = Math.random() * 100 + 'vw';
+                floatEl.style.animationDuration = Math.random() * 8 + 6 + 's';
+                floatEl.style.animationDelay = Math.random() * 6 + 's';
+                snowContainer.appendChild(floatEl);
+            }
+        }
+
+        // Boot
+        window.onload = function() {
+            createFestiveDecor();
+            updateUI();
+            initFirebaseAndSync();
+        };
+    </script>
+</body>
+</html>
