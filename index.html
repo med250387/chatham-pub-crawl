@@ -132,9 +132,9 @@
                         <i class="fa-solid fa-shield-halved"></i>
                     </div>
                     <h3 class="text-lg font-bold text-white">Organizer Admin Mode</h3>
-                    <p class="text-xs text-slate-400 mt-1">Enter passcode to unlock publishing ticks for the group.</p>
+                    <p class="text-xs text-slate-400 mt-1">Enter organizer passcode to unlock publishing ticks for the group.</p>
                 </div>
-                <input type="password" id="admin-pass-input" placeholder="Enter passcode (default: carnie12)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm text-center focus:outline-none focus:border-emerald-500">
+                <input type="password" id="admin-pass-input" placeholder="Enter passcode" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm text-center focus:outline-none focus:border-emerald-500">
                 <div class="grid grid-cols-2 gap-2">
                     <button onclick="closeAdminModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-2.5 rounded-xl text-sm transition">Cancel</button>
                     <button onclick="verifyAdminPass()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-sm transition shadow">Unlock</button>
@@ -186,7 +186,21 @@
             </div>
             
             <div id="non-admin-warning" class="text-center mt-2 hidden">
-                <span class="text-[10px] text-slate-400 italic">🔒 Only the organizer can tick off pubs. <button onclick="openAdminModal()" class="text-amber-400 underline hover:text-amber-300">Organizer Login</button></span>
+                <span class="text-[10px] text-slate-400 italic">🔒 Only the organizer can tick off pubs. Use Admin Mode below to unlock.</span>
+            </div>
+        </section>
+
+        <!-- Embedded Google Map Preview of Current Location -->
+        <section class="bg-slate-900 border border-slate-800 rounded-2xl p-3 shadow-xl space-y-2">
+            <div class="flex items-center justify-between px-1">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center space-x-1.5">
+                    <i class="fa-solid fa-map-location-dot text-red-500"></i>
+                    <span>Current Stop Radar</span>
+                </h3>
+                <span class="text-[10px] text-slate-400 font-mono" id="map-stop-label">Stop 1</span>
+            </div>
+            <div class="w-full h-40 rounded-xl overflow-hidden border border-slate-800 bg-slate-950 relative">
+                <iframe id="pub-map-frame" class="w-full h-full border-0 filter contrast-125" loading="lazy" src="about:blank"></iframe>
             </div>
         </section>
 
@@ -234,10 +248,6 @@
                     <span>Itinerary (12 Stops)</span>
                 </h3>
                 <div class="flex items-center space-x-2">
-                    <button onclick="openAdminModal()" class="text-[11px] text-emerald-400 hover:text-emerald-300 font-bold transition">
-                        Admin Login
-                    </button>
-                    <span class="text-slate-700">|</span>
                     <button onclick="resetCrawlData()" class="text-[11px] text-slate-400 hover:text-red-400 transition">
                         Reset
                     </button>
@@ -250,13 +260,19 @@
             </div>
         </section>
 
-        <!-- Footer Branding & Share Link -->
+        <!-- Footer Branding & Share Link & Admin Toggle -->
         <footer class="text-center pt-2 pb-8 space-y-3">
             <button onclick="shareCrawlLink()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold py-3 px-4 rounded-xl text-xs transition shadow flex items-center justify-center space-x-2">
                 <i class="fa-solid fa-share-nodes text-amber-400"></i>
                 <span>Share Live Crawl Link</span>
             </button>
-            <p class="text-[11px] text-slate-400">12 Pubs of Carnage Christmas &bull; Built with D.R.A.F.T.</p>
+            <div class="flex items-center justify-center space-x-4 pt-1">
+                <button onclick="openAdminModal()" class="text-xs text-emerald-400 hover:text-emerald-300 font-bold transition flex items-center space-x-1 bg-slate-900 border border-emerald-900/50 px-3 py-2 rounded-xl">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <span>Organizer Admin Login</span>
+                </button>
+            </div>
+            <p class="text-[11px] text-slate-400 pt-1">12 Pubs of Carnage Christmas &bull; Built with D.R.A.F.T.</p>
         </footer>
 
     </main>
@@ -358,11 +374,11 @@
 
         window.verifyAdminPass = function() {
             const val = document.getElementById('admin-pass-input').value;
-            if (val === 'carnie12' || val === 'admin') {
+            if (val === 'Timber#01') {
                 state.isAdmin = true;
                 closeAdminModal();
                 updateUI();
-                openModal('Admin Unlocked', 'You now have full control to tick off pubs for the group!', 'fa-solid fa-shield-halved text-emerald-400');
+                openModal('Admin Unlocked', 'Organizer mode activated. You now have full control over publishing ticks for the group!', 'fa-solid fa-shield-halved text-emerald-400');
             } else {
                 openModal('Access Denied', 'Incorrect passcode. Try again.', 'fa-solid fa-triangle-exclamation text-red-500');
             }
@@ -412,20 +428,22 @@
             document.getElementById('current-pub-note').innerText = activePub.note;
             document.getElementById('directions-btn').href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(activePub.name + ' ' + activePub.address)}`;
 
+            // Update Embedded Map Frame
+            document.getElementById('map-stop-label').innerText = `Stop ${activeIdx + 1}: ${activePub.name}`;
+            const mapFrame = document.getElementById('pub-map-frame');
+            const mapQuery = encodeURIComponent(activePub.name + ', ' + activePub.address);
+            mapFrame.src = `https://maps.google.com/maps?q=${mapQuery}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+
             // Admin Banner & Warnings
             const adminBanner = document.getElementById('admin-banner');
             const nonAdminWarning = document.getElementById('non-admin-warning');
-            const conquerBtn = document.getElementById('conquer-btn');
 
             if (state.isAdmin) {
                 adminBanner.classList.remove('hidden');
                 nonAdminWarning.classList.add('hidden');
-                conquerBtn.disabled = false;
-                conquerBtn.classList.remove('opacity-50', 'cursor-not-allowed');
             } else {
                 adminBanner.classList.add('hidden');
                 nonAdminWarning.classList.remove('hidden');
-                conquerBtn.disabled = false; // Allow click to prompt admin login if needed
             }
 
             // Progress Counter
@@ -508,8 +526,8 @@
                 return;
             }
             state.completed[idx] = !state.completed[idx];
+            updateUI(); // Immediate local render update
             await saveStateToFirestore();
-            updateUI();
         };
 
         window.markCurrentCompleted = async function() {
@@ -520,8 +538,8 @@
             const activeIdx = state.completed.findIndex(c => !c);
             if (activeIdx !== -1) {
                 state.completed[activeIdx] = true;
+                updateUI(); // Immediate local render update
                 await saveStateToFirestore();
-                updateUI();
                 openModal('Stop Conquered! 🍻', `Successfully checked off ${pubsData[activeIdx].name}. Onward to the next stop!`, 'fa-solid fa-champagne-glasses text-amber-400');
             } else {
                 openModal('All Done!', 'All 12 pubs have been conquered! Legend status achieved.', 'fa-solid fa-trophy text-amber-400');
@@ -535,8 +553,8 @@
             }
             if (confirm("Are you sure you want to reset all ticked pubs?")) {
                 state.completed = Array(12).fill(false);
+                updateUI(); // Immediate local render update
                 await saveStateToFirestore();
-                updateUI();
             }
         };
 
@@ -549,7 +567,7 @@
             } catch (err) {
                 console.warn("Firestore write skipped/failed:", err);
             } finally {
-                setTimeout(() => { isSyncing = false; }, 500);
+                setTimeout(() => { isSyncing = false; }, 400);
             }
         }
 
